@@ -17,19 +17,26 @@ public class RankManager {
 
     private final Axos plugin = Axos.getInstance();
 
-    private FileConfiguration rankConfig;
-    private File rankFile;
+    // ── Archivos de configuración ──────────────────────────────────────────
+    private FileConfiguration config;    // config.yml   — settings + menú
+    private FileConfiguration ranks;     // ranks.yml    — definición de rangos
+    private FileConfiguration messages;  // messages.yml — mensajes
 
+    private File configFile;
+    private File ranksFile;
+    private File messagesFile;
+
+    // ── Datos de progreso ──────────────────────────────────────────────────
     private FileConfiguration dataConfig;
     private File dataFile;
 
     private Economy econ = null;
 
-    // ── Datos en memoria ──────────────────────────────────────────────────
-    private final Map<UUID, Integer> playerRanks    = new ConcurrentHashMap<>();
+    // ── Datos en memoria ───────────────────────────────────────────────────
+    private final Map<UUID, Integer>              playerRanks    = new ConcurrentHashMap<>();
     private final Map<UUID, Map<String, Integer>> playerProgress = new ConcurrentHashMap<>();
 
-    // ── Dirty-flag async save ─────────────────────────────────────────────
+    // ── Dirty-flag async save ──────────────────────────────────────────────
     private final Set<UUID> dirtyPlayers = ConcurrentHashMap.newKeySet();
     private int saveTaskId = -1;
 
@@ -46,7 +53,6 @@ public class RankManager {
 
     private void startAsyncSaveTask() {
         if (saveTaskId != -1) Bukkit.getScheduler().cancelTask(saveTaskId);
-
         saveTaskId = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             Set<UUID> toSave = new HashSet<>(dirtyPlayers);
             dirtyPlayers.removeAll(toSave);
@@ -100,11 +106,25 @@ public class RankManager {
     // =========================================================
 
     private void setupConfigs() {
-        rankFile = new File(plugin.getDataFolder(), "modules/rankup/config.yml");
-        if (!rankFile.exists()) plugin.saveResource("modules/rankup/config.yml", false);
-        rankConfig = YamlConfiguration.loadConfiguration(rankFile);
+        File folder = new File(plugin.getDataFolder(), "modules/rankup");
 
-        dataFile = new File(plugin.getDataFolder(), "modules/rankup/rankdata.yml");
+        // ── config.yml ──
+        configFile = new File(folder, "config.yml");
+        if (!configFile.exists()) plugin.saveResource("modules/rankup/config.yml", false);
+        config = YamlConfiguration.loadConfiguration(configFile);
+
+        // ── ranks.yml ──
+        ranksFile = new File(folder, "ranks.yml");
+        if (!ranksFile.exists()) plugin.saveResource("modules/rankup/ranks.yml", false);
+        ranks = YamlConfiguration.loadConfiguration(ranksFile);
+
+        // ── messages.yml ──
+        messagesFile = new File(folder, "messages.yml");
+        if (!messagesFile.exists()) plugin.saveResource("modules/rankup/messages.yml", false);
+        messages = YamlConfiguration.loadConfiguration(messagesFile);
+
+        // ── rankdata.yml (datos de jugadores, no se expone como resource) ──
+        dataFile = new File(folder, "rankdata.yml");
         if (!dataFile.exists()) {
             try {
                 dataFile.getParentFile().mkdirs();
@@ -125,7 +145,9 @@ public class RankManager {
     }
 
     public void reloadConfig() {
-        rankConfig = YamlConfiguration.loadConfiguration(rankFile);
+        config   = YamlConfiguration.loadConfiguration(configFile);
+        ranks    = YamlConfiguration.loadConfiguration(ranksFile);
+        messages = YamlConfiguration.loadConfiguration(messagesFile);
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
         playerRanks.clear();
         playerProgress.clear();
@@ -210,6 +232,21 @@ public class RankManager {
         }
     }
 
-    public FileConfiguration getConfig() { return rankConfig; }
+    // ── Getters de configs ─────────────────────────────────────────────────
+
+    /** settings + menú principal */
+    public FileConfiguration getConfig()    { return config; }
+
+    /** definición de rangos (ranks.yml) */
+    public FileConfiguration getRanks()     { return ranks; }
+
+    /** mensajes (messages.yml) */
+    public FileConfiguration getMessages()  { return messages; }
+
+    /** shortcut: obtiene un mensaje ya traducido */
+    public String getMessage(String path) {
+        return messages.getString("messages." + path, "&cMensaje faltante: " + path);
+    }
+
     public Economy getEconomy() { return econ; }
 }

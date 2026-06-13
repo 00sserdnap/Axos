@@ -1,0 +1,95 @@
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃                    AXOS RANKUP — DEFINICIÓN DE RANGOS             ┃
+# ┃                       Developed by: pandress                      ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#
+#  ESTRUCTURA DE CADA RANGO:
+#
+#    prefix        → texto del placeholder %axos_rank_prefix%
+#    requirements  → condiciones que el jugador debe cumplir
+#    rewards_lore  → texto que aparece en el menú como descripción de recompensa
+#    commands      → comandos ejecutados por consola al subir de rango
+#
+# ─────────────────────────────────────────────────────────────────────
+#  REQUISITOS DISPONIBLES
+# ─────────────────────────────────────────────────────────────────────
+#
+#  money: <cantidad>
+#    Dinero en Vault. Ej: money: 5000
+#
+#  playtime_hours: <horas>
+#    Horas jugadas en el servidor. Ej: playtime_hours: 10
+#
+#  player_kills: <cantidad>
+#    Kills PvP (jugadores eliminados). Ej: player_kills: 25
+#
+#  blocks_mine:
+#    NOMBRE_BLOQUE: <cantidad>
+#    Bloques minados. IDs en mayúsculas de Minecraft.
+#    Ej: DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, COAL_ORE, STONE
+#
+#  blocks_place:
+#    NOMBRE_BLOQUE: <cantidad>
+#    Bloques colocados. IDs en mayúsculas de Minecraft.
+#    Ej: DIRT, OAK_LOG, COBBLESTONE
+#
+#  mob_kills:
+#    NOMBRE_MOB: <cantidad>
+#    Mobs eliminados. IDs en mayúsculas de Minecraft.
+#    Ej: ZOMBIE, SKELETON, CREEPER, ENDERMAN, BLAZE, WITHER_SKELETON
+#
+# ─────────────────────────────────────────────────────────────────────
+#  EJEMPLO COMPLETO CON TODOS LOS REQUISITOS (referencia)
+# ─────────────────────────────────────────────────────────────────────
+#
+# ranks:
+#   99:
+#     prefix: '&4[Ejemplo]'
+#     requirements:
+#       money: 10000
+#       playtime_hours: 20
+#       player_kills: 25
+#       blocks_mine:
+#         DIAMOND_ORE: 100
+#         DEEPSLATE_DIAMOND_ORE: 50
+#       blocks_place:
+#         OAK_LOG: 200
+#       mob_kills:
+#         ZOMBIE: 50
+#         SKELETON: 30
+#     rewards_lore:
+#       - 'Kit especial'
+#       - 'Prefijo exclusivo'
+#     commands:
+#       - 'lp user %player% parent set rango99'
+#       - 'give %player% diamond 5'
+#
+# ─────────────────────────────────────────────────────────────────────
+#  RANGOS ACTIVOS
+# ─────────────────────────────────────────────────────────────────────
+
+ranks:
+
+  1:
+    prefix: '&a[Rango 1]'
+    requirements:
+      money: 1000
+      playtime_hours: 1
+    rewards_lore:
+      - 'Acceso a /kit rango1'
+    commands:
+      - 'lp user %player% parent set rango1'
+
+  2:
+    prefix: '&b[Rango 2]'
+    requirements:
+      money: 5000
+      playtime_hours: 5
+      player_kills: 10
+      blocks_mine:
+        DIAMOND_ORE: 50
+    rewards_lore:
+      - 'Acceso a /kit rango2'
+      - 'Prefijo especial'
+    commands:
+      - 'lp user %player% parent set rango2'

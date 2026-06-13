@@ -18,13 +18,13 @@ public class RankListener implements Listener {
     }
 
     private void checkAndAddProgress(Player player, String category, String type, int amount) {
-        FileConfiguration config = manager.getConfig();
+        FileConfiguration rnks = manager.getRanks();  // ranks.yml
         int nextRank = manager.getPlayerRank(player.getUniqueId()) + 1;
         String path  = "ranks." + nextRank + ".requirements." + category + "." + type;
 
-        if (!config.contains(path)) return;
+        if (!rnks.contains(path)) return;
 
-        int required = config.getInt(path);
+        int required = rnks.getInt(path);
         int current  = manager.getProgress(player.getUniqueId(), category, type);
 
         if (current < required) {
@@ -45,19 +45,16 @@ public class RankListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
         if (event.getEntity().getKiller() == null) return;
-
         Player killer = event.getEntity().getKiller();
 
         if (event.getEntity() instanceof Player) {
+            FileConfiguration rnks = manager.getRanks();
             int nextRank = manager.getPlayerRank(killer.getUniqueId()) + 1;
             String path  = "ranks." + nextRank + ".requirements.player_kills";
-
-            if (manager.getConfig().contains(path)) {
-                int required = manager.getConfig().getInt(path);
+            if (rnks.contains(path)) {
+                int required = rnks.getInt(path);
                 int current  = manager.getProgress(killer.getUniqueId(), "general", "player_kills");
-                if (current < required) {
-                    manager.addProgress(killer.getUniqueId(), "general", "player_kills", 1);
-                }
+                if (current < required) manager.addProgress(killer.getUniqueId(), "general", "player_kills", 1);
             }
         } else {
             checkAndAddProgress(killer, "mob_kills", event.getEntity().getType().name(), 1);

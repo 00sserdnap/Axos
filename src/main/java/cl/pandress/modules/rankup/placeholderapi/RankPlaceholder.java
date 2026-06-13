@@ -5,7 +5,6 @@ import cl.pandress.utils.ChatUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -29,43 +28,35 @@ public class RankPlaceholder extends PlaceholderExpansion {
     public String onRequest(OfflinePlayer player, @NotNull String params) {
         if (player == null) return "";
 
-        // %axos_rank% → número del rango actual
+        // %axos_rank%
         if (params.equalsIgnoreCase("rank")) {
             return String.valueOf(manager.getPlayerRank(player.getUniqueId()));
         }
 
-        // %axos_rank_prefix% → prefijo definido en config
+        // %axos_rank_prefix%
         if (params.equalsIgnoreCase("rank_prefix")) {
             int rank = manager.getPlayerRank(player.getUniqueId());
-            FileConfiguration config = manager.getConfig();
-
             if (rank == 0) {
-                return ChatUtil.color(config.getString("settings.default_prefix", "&7[Usuario]"));
+                return ChatUtil.color(manager.getConfig().getString("settings.default_prefix", "&7[Usuario]"));
             }
-            return ChatUtil.color(config.getString("ranks." + rank + ".prefix", "&7[Rango " + rank + "]"));
+            return ChatUtil.color(manager.getRanks().getString("ranks." + rank + ".prefix", "&7[Rango " + rank + "]"));
         }
 
-        // %axos_top_name_1% → nombre del jugador en posición N del top
-        // %axos_top_rank_1% → rango del jugador en posición N del top
+        // %axos_top_name_N% / %axos_top_rank_N%
         if (params.startsWith("top_")) {
             List<Map.Entry<UUID, Integer>> top = manager.getTopRanks();
             String[] parts = params.split("_");
-
             if (parts.length < 3) return "---";
-
             try {
                 int index = Integer.parseInt(parts[2]) - 1;
                 if (index < 0 || index >= top.size()) return "---";
-
                 if (parts[1].equalsIgnoreCase("name")) {
                     String name = Bukkit.getOfflinePlayer(top.get(index).getKey()).getName();
                     return name != null ? name : "Desconocido";
                 }
-
                 if (parts[1].equalsIgnoreCase("rank")) {
                     return String.valueOf(top.get(index).getValue());
                 }
-
             } catch (NumberFormatException e) {
                 return "---";
             }

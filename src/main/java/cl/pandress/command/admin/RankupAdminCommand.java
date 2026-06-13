@@ -13,8 +13,6 @@ public class RankupAdminCommand implements CommandExecutor {
 
     private final RankManager manager;
 
-    private static final String PREFIX = "&8[&6Rankup&8] &f";
-
     public RankupAdminCommand(RankManager manager) {
         this.manager = manager;
     }
@@ -22,85 +20,79 @@ public class RankupAdminCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("axos.admin.rankup")) {
-            sender.sendMessage(ChatUtil.color(PREFIX + "&cNo tienes permisos para usar este comando."));
+            sender.sendMessage(ChatUtil.color(manager.getMessage("no-permission")));
             return true;
         }
 
-        if (args.length == 0) {
-            sendHelp(sender);
-            return true;
-        }
+        if (args.length == 0) { sendHelp(sender); return true; }
 
         switch (args[0].toLowerCase()) {
 
-            // /rankupadmin set <jugador> <rango>
             case "set" -> {
                 if (args.length < 3) {
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&eUso: &f/rankupadmin set <jugador> <rango>"));
+                    sender.sendMessage(ChatUtil.color("&8[&e!&8] &eUso: &f/rankupadmin set <jugador> <rango>"));
                     return true;
                 }
-
                 OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
                 if (!target.hasPlayedBefore() && !target.isOnline()) {
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&cJugador &e" + args[1] + " &cno encontrado."));
+                    sender.sendMessage(ChatUtil.color(manager.getMessage("admin-player-not-found").replace("%player%", args[1])));
                     return true;
                 }
-
                 int rank;
                 try {
                     rank = Integer.parseInt(args[2]);
                     if (rank < 0) throw new NumberFormatException();
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&cEl rango debe ser un número positivo."));
+                    sender.sendMessage(ChatUtil.color(manager.getMessage("admin-invalid-rank")));
                     return true;
                 }
-
                 manager.setPlayerRank(target.getUniqueId(), rank);
-                sender.sendMessage(ChatUtil.color(PREFIX + "Rango de &e" + target.getName() + " &festablecido a &e#" + rank + "&f."));
-
+                sender.sendMessage(ChatUtil.color(
+                    manager.getMessage("admin-set-success")
+                        .replace("%player%", target.getName())
+                        .replace("%rank%", String.valueOf(rank))
+                ));
                 if (target.isOnline()) {
-                    ((Player) target.getPlayer()).sendMessage(ChatUtil.color(PREFIX + "Un administrador ha establecido tu rango a &e#" + rank + "&f."));
+                    ((Player) target.getPlayer()).sendMessage(ChatUtil.color(
+                        manager.getMessage("admin-set-notify").replace("%rank%", String.valueOf(rank))
+                    ));
                 }
             }
 
-            // /rankupadmin reset <jugador>
             case "reset" -> {
                 if (args.length < 2) {
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&eUso: &f/rankupadmin reset <jugador|all>"));
+                    sender.sendMessage(ChatUtil.color("&8[&e!&8] &eUso: &f/rankupadmin reset <jugador|all>"));
                     return true;
                 }
-
                 if (args[1].equalsIgnoreCase("all")) {
                     manager.resetAllRanks();
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&cTodos los rangos han sido reseteados."));
+                    sender.sendMessage(ChatUtil.color(manager.getMessage("admin-reset-all")));
                     return true;
                 }
-
                 OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
                 if (!target.hasPlayedBefore() && !target.isOnline()) {
-                    sender.sendMessage(ChatUtil.color(PREFIX + "&cJugador &e" + args[1] + " &cno encontrado."));
+                    sender.sendMessage(ChatUtil.color(manager.getMessage("admin-player-not-found").replace("%player%", args[1])));
                     return true;
                 }
-
                 manager.resetPlayerRank(target.getUniqueId());
-                sender.sendMessage(ChatUtil.color(PREFIX + "Rango de &e" + target.getName() + " &freseteado."));
-
+                sender.sendMessage(ChatUtil.color(
+                    manager.getMessage("admin-reset-success").replace("%player%", target.getName())
+                ));
                 if (target.isOnline()) {
-                    ((Player) target.getPlayer()).sendMessage(ChatUtil.color(PREFIX + "Un administrador ha reseteado tu rango."));
+                    ((Player) target.getPlayer()).sendMessage(ChatUtil.color(manager.getMessage("admin-reset-notify")));
                 }
             }
 
             default -> sendHelp(sender);
         }
-
         return true;
     }
 
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatUtil.color("&8&m-----------------------------"));
         sender.sendMessage(ChatUtil.color("&6&lRankup Admin &8| &fComandos"));
-        sender.sendMessage(ChatUtil.color(" &e/rankupadmin set <jugador> <rango> &8- &fEstablece el rango de un jugador"));
-        sender.sendMessage(ChatUtil.color(" &e/rankupadmin reset <jugador|all> &8- &fResetea el rango de un jugador o todos"));
+        sender.sendMessage(ChatUtil.color(" &e/rankupadmin set <jugador> <rango> &8- &fEstablece el rango"));
+        sender.sendMessage(ChatUtil.color(" &e/rankupadmin reset <jugador|all> &8- &fResetea el rango"));
         sender.sendMessage(ChatUtil.color("&8&m-----------------------------"));
     }
 }

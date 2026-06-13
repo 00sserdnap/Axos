@@ -1,0 +1,44 @@
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃                    AXOS RANKUP — MENSAJES                         ┃
+# ┃                       Developed by: pandress                      ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#
+#  Códigos de color: & seguido de un código (ej. &a = verde, &c = rojo)
+#  Placeholders disponibles según el mensaje (indicados en comentarios)
+#
+
+messages:
+
+  # ── Comandos generales ─────────────────────────────────────────────
+  only-players: '&8[&c!&8] &fSolo jugadores pueden usar este comando.'
+  module-disabled: '&8[&c!&8] &fEl sistema de rangos está desactivado actualmente.'
+  no-permission: '&8[&c!&8] &fNo tienes permisos para usar este comando.'
+
+  # ── Rankup ────────────────────────────────────────────────────────
+  # %rank% = número del rango al que subió
+  rankup-success-chat: '&8[&a!&8] &f¡Felicidades! Ahora eres &eRango #%rank%&f.'
+  rankup-fail: '&c&lERROR &8» &7Aún no cumples con todos los requisitos.'
+
+  # Título en pantalla al subir de rango
+  # %rank% = número del rango al que subió
+  rankup-title: '&a&lRANK UP!'
+  rankup-subtitle: '&fAhora eres Rango #%rank%'
+
+  # ── Admin commands ─────────────────────────────────────────────────
+  # %player% = nombre del jugador, %rank% = número de rango
+  admin-set-success: '&8[&a!&8] &fRango de &e%player% &festablecido a &e#%rank%&f.'
+  admin-set-notify: '&8[&a!&8] &fUn administrador ha establecido tu rango a &e#%rank%&f.'
+  admin-reset-success: '&8[&a!&8] &fRango de &e%player% &freseteado.'
+  admin-reset-notify: '&8[&e!&8] &fUn administrador ha reseteado tu rango.'
+  admin-reset-all: '&8[&c!&8] &cTodos los rangos han sido reseteados.'
+  admin-player-not-found: '&8[&c!&8] &cJugador &e%player% &cno encontrado.'
+  admin-invalid-rank: '&8[&c!&8] &cEl rango debe ser un número positivo.'
+
+  # ── Menú de preview (Vista de todos los rangos) ───────────────────
+  preview-rank-reached: '&a✔ Rango alcanzado'
+  preview-rank-next: '&e▶ Rango siguiente'
+  preview-rank-locked: '&8✘ Bloqueado'
+  preview-no-rewards: 'Ver al subir de rango'
+  preview-back-button: '&c← Volver al menú principal'
+  preview-prev-page: '&e← Página anterior'
+  preview-next-page: '&ePágina siguiente →'

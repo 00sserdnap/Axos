@@ -27,14 +27,15 @@ public class RankMenu {
 
     public static void open(Player player) {
         RankManager manager = Axos.getInstance().getRankManager();
-        FileConfiguration config = manager.getConfig();
+        FileConfiguration cfg   = manager.getConfig();   // config.yml  — menú
+        FileConfiguration rnks  = manager.getRanks();    // ranks.yml   — rangos
 
-        String title   = config.getString("settings.menu.title", "&8Menu | RankUp");
-        String typeStr = config.getString("settings.menu.type", "CHEST").toUpperCase();
+        String title   = cfg.getString("menu.title", "&8Menu | RankUp");
+        String typeStr = cfg.getString("menu.type", "CHEST").toUpperCase();
 
         Inventory inv;
         if (typeStr.equals("CHEST")) {
-            int rows = config.getInt("settings.menu.rows", 3);
+            int rows = cfg.getInt("menu.rows", 3);
             int size = Math.min(6, Math.max(1, rows)) * 9;
             inv = Bukkit.createInventory((InventoryHolder) null, size, ChatUtil.color(title));
         } else {
@@ -42,77 +43,99 @@ public class RankMenu {
             inv = Bukkit.createInventory((InventoryHolder) null, type, ChatUtil.color(title));
         }
 
-        // Relleno decorativo
-        if (config.getBoolean("settings.menu.items.fillers.enabled", true)) {
-            String matStr = config.getString("settings.menu.items.fillers.material", "GRAY_STAINED_GLASS_PANE");
-            Material mat  = Material.matchMaterial(matStr);
+        // — Relleno decorativo —
+        if (cfg.getBoolean("menu.items.fillers.enabled", true)) {
+            Material mat = Material.matchMaterial(cfg.getString("menu.items.fillers.material", "GRAY_STAINED_GLASS_PANE"));
             if (mat != null) {
                 ItemStack filler = new ItemStack(mat);
                 ItemMeta meta = filler.getItemMeta();
                 if (meta != null) {
-                    meta.setDisplayName(ChatUtil.color(config.getString("settings.menu.items.fillers.name", " ")));
+                    meta.setDisplayName(ChatUtil.color(cfg.getString("menu.items.fillers.name", " ")));
                     filler.setItemMeta(meta);
                 }
-                for (int slot : config.getIntegerList("settings.menu.items.fillers.slots")) {
+                for (int slot : cfg.getIntegerList("menu.items.fillers.slots")) {
                     if (slot < inv.getSize()) inv.setItem(slot, filler);
                 }
             }
         }
 
-        // Botón de rankup
-        int nextRank   = manager.getPlayerRank(player.getUniqueId()) + 1;
-        int rankupSlot = config.getInt("settings.menu.items.rankup_button.slot", 12);
+        // — Slot 11: botón preview —
+        int previewSlot = cfg.getInt("menu.items.preview_button.slot", 11);
+        if (previewSlot < inv.getSize()) inv.setItem(previewSlot, buildPreviewButton(cfg));
+
+        // — Slot 13: botón rankup —
+        int rankupSlot = cfg.getInt("menu.items.rankup_button.slot", 13);
         if (rankupSlot < inv.getSize()) {
-            inv.setItem(rankupSlot, buildRankupItem(player, nextRank, manager, config));
+            int nextRank = manager.getPlayerRank(player.getUniqueId()) + 1;
+            inv.setItem(rankupSlot, buildRankupItem(player, nextRank, manager, cfg, rnks));
         }
 
-        // Botón de top
-        int topSlot = config.getInt("settings.menu.items.top_button.slot", 14);
-        if (topSlot < inv.getSize()) {
-            inv.setItem(topSlot, buildTopItem(manager, config));
-        }
+        // — Slot 15: botón top —
+        int topSlot = cfg.getInt("menu.items.top_button.slot", 15);
+        if (topSlot < inv.getSize()) inv.setItem(topSlot, buildTopItem(manager, cfg));
 
         player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.2f);
         player.openInventory(inv);
     }
 
-    private static ItemStack buildRankupItem(Player player, int nextRank, RankManager manager, FileConfiguration config) {
-        String pathMenu = "settings.menu.items.rankup_button.";
-        Material mat    = Material.matchMaterial(config.getString(pathMenu + "material", "EMERALD"));
+    // ── Botón preview (slot 11) ───────────────────────────────────────────
 
-        ItemStack item = new ItemStack(mat != null ? mat : Material.EMERALD);
-        ItemMeta meta  = item.getItemMeta();
+    private static ItemStack buildPreviewButton(FileConfiguration cfg) {
+        String path  = "menu.items.preview_button.";
+        Material mat = Material.matchMaterial(cfg.getString(path + "material", "BOOK"));
+        ItemStack item = new ItemStack(mat != null ? mat : Material.BOOK);
+        ItemMeta  meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        meta.setDisplayName(ChatUtil.color(cfg.getString(path + "name", "&b&lVer Todos los Rangos")));
+        List<String> lore = new ArrayList<>();
+        List<String> cfgLore = cfg.getStringList(path + "lore");
+        if (cfgLore.isEmpty()) {
+            lore.add(ChatUtil.color("&7Explora todos los rangos disponibles,"));
+            lore.add(ChatUtil.color("&7sus requisitos y recompensas."));
+            lore.add(""); lore.add(ChatUtil.color("&eClick para abrir"));
+        } else {
+            for (String l : cfgLore) lore.add(ChatUtil.color(l));
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    // ── Botón rankup (slot 13) ────────────────────────────────────────────
+
+    private static ItemStack buildRankupItem(Player player, int nextRank, RankManager manager,
+                                             FileConfiguration cfg, FileConfiguration rnks) {
+        String pathMenu = "menu.items.rankup_button.";
+        Material mat    = Material.matchMaterial(cfg.getString(pathMenu + "material", "EMERALD"));
+        ItemStack item  = new ItemStack(mat != null ? mat : Material.EMERALD);
+        ItemMeta  meta  = item.getItemMeta();
         if (meta == null) return item;
 
         String pathRank = "ranks." + nextRank;
-
-        if (config.getConfigurationSection(pathRank) == null) {
-            meta.setDisplayName(ChatUtil.color(config.getString(pathMenu + "name_max", "&a&lRango Máximo Alcanzado")));
+        if (rnks.getConfigurationSection(pathRank) == null) {
+            meta.setDisplayName(ChatUtil.color(cfg.getString(pathMenu + "name_max", "&a&lRango Máximo Alcanzado")));
             item.setItemMeta(meta);
             return item;
         }
 
         meta.setDisplayName(ChatUtil.color(
-            config.getString(pathMenu + "name", "&a&lRango #%next_rank%")
-                  .replace("%next_rank%", String.valueOf(nextRank))
+            cfg.getString(pathMenu + "name", "&a&lRango #%next_rank%")
+               .replace("%next_rank%", String.valueOf(nextRank))
         ));
 
         List<String> finalLore   = new ArrayList<>();
-        List<String> rewardsLore = config.getStringList(pathRank + ".rewards_lore");
+        List<String> rewardsLore = rnks.getStringList(pathRank + ".rewards_lore");
 
-        for (String line : config.getStringList(pathMenu + "lore")) {
+        for (String line : cfg.getStringList(pathMenu + "lore")) {
             if (line.contains("%rewards%")) {
-                String sep = config.getString("settings.menu.reward_separator", " &8| ");
-                for (String reward : rewardsLore) {
-                    finalLore.add(ChatUtil.color(sep + "&a" + reward));
-                }
-                continue;
+                String sep = cfg.getString("menu.reward_separator", " &8| ");
+                for (String reward : rewardsLore) finalLore.add(ChatUtil.color(sep + "&a" + reward));
+            } else if (line.contains("%requirements%")) {
+                appendRequirementLines(finalLore, player, manager, cfg, rnks, pathRank);
+            } else {
+                finalLore.add(ChatUtil.color(line));
             }
-            if (line.contains("%requirements%")) {
-                appendRequirementLines(finalLore, player, manager, config, pathRank);
-                continue;
-            }
-            finalLore.add(ChatUtil.color(line));
         }
 
         meta.setLore(finalLore);
@@ -120,118 +143,97 @@ public class RankMenu {
         return item;
     }
 
-    private static void appendRequirementLines(List<String> lore, Player player, RankManager manager,
-                                               FileConfiguration config, String pathRank) {
-        UUID uuid = player.getUniqueId();
-        // Separador configurable — admite texto, color codes y emojis
-        String sep = config.getString("settings.menu.requirement_separator", " &8| ");
+    static void appendRequirementLines(List<String> lore, Player player, RankManager manager,
+                                       FileConfiguration cfg, FileConfiguration rnks, String pathRank) {
+        UUID   uuid = player.getUniqueId();
+        String sep  = cfg.getString("menu.requirement_separator", " &8| ");
 
-        if (config.contains(pathRank + ".requirements.money")) {
-            double req   = config.getDouble(pathRank + ".requirements.money");
+        if (rnks.contains(pathRank + ".requirements.money")) {
+            double req   = rnks.getDouble(pathRank + ".requirements.money");
             double bal   = manager.getEconomy() != null ? manager.getEconomy().getBalance(player) : 0.0;
             String color = bal >= req ? "&a" : "&c";
             lore.add(ChatUtil.color(sep + "&7Dinero: " + color + "$" + formatNumber(req)));
         }
-
-        if (config.contains(pathRank + ".requirements.playtime_hours")) {
-            int req      = config.getInt(pathRank + ".requirements.playtime_hours");
-            int current  = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 72000;
-            String color = current >= req ? "&a" : "&c";
-            lore.add(ChatUtil.color(sep + "&7Horas: " + color + current + "&8/&" + color.charAt(1) + req + "h"));
+        if (rnks.contains(pathRank + ".requirements.playtime_hours")) {
+            int req     = rnks.getInt(pathRank + ".requirements.playtime_hours");
+            int current = player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 72000;
+            String col  = current >= req ? "&a" : "&c";
+            lore.add(ChatUtil.color(sep + "&7Horas: " + col + current + "&8/&" + col.charAt(1) + req + "h"));
         }
-
-        if (config.contains(pathRank + ".requirements.player_kills")) {
-            int req      = config.getInt(pathRank + ".requirements.player_kills");
-            int current  = manager.getProgress(uuid, "general", "player_kills");
-            String color = current >= req ? "&a" : "&c";
-            lore.add(ChatUtil.color(sep + "&7Kills PvP: " + color + current + "&8/" + color + req));
+        if (rnks.contains(pathRank + ".requirements.player_kills")) {
+            int req     = rnks.getInt(pathRank + ".requirements.player_kills");
+            int current = manager.getProgress(uuid, "general", "player_kills");
+            String col  = current >= req ? "&a" : "&c";
+            lore.add(ChatUtil.color(sep + "&7Kills PvP: " + col + current + "&8/" + col + req));
         }
-
-        if (config.getConfigurationSection(pathRank + ".requirements.blocks_mine") != null) {
-            for (String block : config.getConfigurationSection(pathRank + ".requirements.blocks_mine").getKeys(false)) {
-                int req      = config.getInt(pathRank + ".requirements.blocks_mine." + block);
-                int current  = manager.getProgress(uuid, "blocks_mine", block);
-                String color = current >= req ? "&a" : "&c";
-                lore.add(ChatUtil.color(sep + "&7Picar " + formatName(block) + ": " + color + current + "&8/" + color + req));
+        if (rnks.getConfigurationSection(pathRank + ".requirements.blocks_mine") != null) {
+            for (String block : rnks.getConfigurationSection(pathRank + ".requirements.blocks_mine").getKeys(false)) {
+                int req     = rnks.getInt(pathRank + ".requirements.blocks_mine." + block);
+                int current = manager.getProgress(uuid, "blocks_mine", block);
+                String col  = current >= req ? "&a" : "&c";
+                lore.add(ChatUtil.color(sep + "&7Picar " + formatName(block) + ": " + col + current + "&8/" + col + req));
             }
         }
-
-        if (config.getConfigurationSection(pathRank + ".requirements.blocks_place") != null) {
-            for (String block : config.getConfigurationSection(pathRank + ".requirements.blocks_place").getKeys(false)) {
-                int req      = config.getInt(pathRank + ".requirements.blocks_place." + block);
-                int current  = manager.getProgress(uuid, "blocks_place", block);
-                String color = current >= req ? "&a" : "&c";
-                lore.add(ChatUtil.color(sep + "&7Colocar " + formatName(block) + ": " + color + current + "&8/" + color + req));
+        if (rnks.getConfigurationSection(pathRank + ".requirements.blocks_place") != null) {
+            for (String block : rnks.getConfigurationSection(pathRank + ".requirements.blocks_place").getKeys(false)) {
+                int req     = rnks.getInt(pathRank + ".requirements.blocks_place." + block);
+                int current = manager.getProgress(uuid, "blocks_place", block);
+                String col  = current >= req ? "&a" : "&c";
+                lore.add(ChatUtil.color(sep + "&7Colocar " + formatName(block) + ": " + col + current + "&8/" + col + req));
             }
         }
-
-        if (config.getConfigurationSection(pathRank + ".requirements.mob_kills") != null) {
-            for (String mob : config.getConfigurationSection(pathRank + ".requirements.mob_kills").getKeys(false)) {
-                int req      = config.getInt(pathRank + ".requirements.mob_kills." + mob);
-                int current  = manager.getProgress(uuid, "mob_kills", mob);
-                String color = current >= req ? "&a" : "&c";
-                lore.add(ChatUtil.color(sep + "&7Matar " + formatName(mob) + ": " + color + current + "&8/" + color + req));
+        if (rnks.getConfigurationSection(pathRank + ".requirements.mob_kills") != null) {
+            for (String mob : rnks.getConfigurationSection(pathRank + ".requirements.mob_kills").getKeys(false)) {
+                int req     = rnks.getInt(pathRank + ".requirements.mob_kills." + mob);
+                int current = manager.getProgress(uuid, "mob_kills", mob);
+                String col  = current >= req ? "&a" : "&c";
+                lore.add(ChatUtil.color(sep + "&7Matar " + formatName(mob) + ": " + col + current + "&8/" + col + req));
             }
         }
     }
 
-    private static ItemStack buildTopItem(RankManager manager, FileConfiguration config) {
-        String pathMenu = "settings.menu.items.top_button.";
-        Material mat    = Material.matchMaterial(config.getString(pathMenu + "material", "BELL"));
+    // ── Botón top (slot 15) ───────────────────────────────────────────────
 
+    private static ItemStack buildTopItem(RankManager manager, FileConfiguration cfg) {
+        String path = "menu.items.top_button.";
+        Material mat = Material.matchMaterial(cfg.getString(path + "material", "BELL"));
         ItemStack item = new ItemStack(mat != null ? mat : Material.BELL);
-        ItemMeta meta  = item.getItemMeta();
+        ItemMeta  meta = item.getItemMeta();
         if (meta == null) return item;
 
-        meta.setDisplayName(ChatUtil.color(config.getString(pathMenu + "name", "&6&lTop Rangos")));
+        meta.setDisplayName(ChatUtil.color(cfg.getString(path + "name", "&6&lTop Rangos")));
+        List<String> lore = new ArrayList<>();
+        for (String line : cfg.getStringList(path + "lore_header")) lore.add(ChatUtil.color(line));
 
-        List<String> finalLore = new ArrayList<>();
-
-        for (String line : config.getStringList(pathMenu + "lore_header")) {
-            finalLore.add(ChatUtil.color(line));
-        }
-
-        String format = config.getString(pathMenu + "lore_format", " &8| &e#%pos% &f%player% &8(&7Rango %rank%&8)");
-
+        String format = cfg.getString(path + "lore_format", " &8| &e#%pos% &f%player% &8(&7Rango %rank%&8)");
         int pos = 1;
         for (Map.Entry<UUID, Integer> entry : manager.getTopRanks()) {
             String name = Bukkit.getOfflinePlayer(entry.getKey()).getName();
             if (name == null) name = "Desconocido";
-            finalLore.add(ChatUtil.color(
+            lore.add(ChatUtil.color(
                 format.replace("%pos%", String.valueOf(pos))
                       .replace("%player%", name)
                       .replace("%rank%", String.valueOf(entry.getValue()))
             ));
             pos++;
         }
-
-        for (String line : config.getStringList(pathMenu + "lore_footer")) {
-            finalLore.add(ChatUtil.color(line));
-        }
-
-        meta.setLore(finalLore);
+        for (String line : cfg.getStringList(path + "lore_footer")) lore.add(ChatUtil.color(line));
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
 
-    /**
-     * Convierte un ID interno a nombre legible.
-     * DIAMOND_ORE → Diamond Ore | ZOMBIE_PIGLIN → Zombie Piglin
-     */
-    private static String formatName(String id) {
-        String[] words = id.toLowerCase().split("_");
+    // ── Utilidades compartidas ────────────────────────────────────────────
+
+    static String formatName(String id) {
         StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                sb.append(Character.toUpperCase(word.charAt(0)))
-                  .append(word.substring(1))
-                  .append(" ");
-            }
+        for (String w : id.toLowerCase().split("_")) {
+            if (!w.isEmpty()) sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1)).append(" ");
         }
         return sb.toString().trim();
     }
 
-    private static String formatNumber(double value) {
+    static String formatNumber(double value) {
         if (value >= 1_000_000_000) return DF.format(value / 1_000_000_000) + "b";
         if (value >= 1_000_000)     return DF.format(value / 1_000_000)     + "m";
         if (value >= 1_000)         return DF.format(value / 1_000)         + "k";
