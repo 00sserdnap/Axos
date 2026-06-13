@@ -1,0 +1,39 @@
+settings:
+  death-spawn: true
+  default-delay: 5 # Tiempo en segundos para teletransportarse
+  default-cooldown: 30 # Tiempo en segundos para volver a usar /spawn
+
+# Permiso para no esperar nada al teletransportarse: axos.spawn.delay.bypass
+delay-permissions:
+  'axos.spawn.delay.vip': 3
+  'axos.spawn.delay.mvp': 1
+
+# Permiso para no tener cooldown: axos.spawn.cooldown.bypass
+cooldown-permissions:
+  'axos.spawn.cooldown.vip': 15
+  'axos.spawn.cooldown.mvp': 5
+
+# Configuración de Sonidos
+sounds:
+  teleport-start:
+    enabled: true
+    sound: 'BLOCK_PORTAL_TRIGGER'
+    volume: 0.5
+    pitch: 2.0
+  teleport-tick:
+    enabled: true
+    sound: 'BLOCK_NOTE_BLOCK_PLING'
+    volume: 1.0
+    pitch: 1.0
+  teleport-success:
+    enabled: true
+    sound: 'ENTITY_PLAYER_LEVELUP'
+    volume: 1.0
+    pitch: 1.0
+  teleport-cancel:
+    enabled: true
+    sound: 'BLOCK_ANVIL_PLACE'
+    volume: 1.0
+    pitch: 0.5
+
+location: {}

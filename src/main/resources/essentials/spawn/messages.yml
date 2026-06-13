@@ -1,0 +1,13 @@
+messages:
+  not-player: '&8[&c&l!&8] &fSolo los jugadores pueden ejecutar este comando.'
+  no-permission: '&8[&c&l!&8] &fNo tienes permisos para usar este comando.'
+  spawn-not-set: '&8[&e&l!&8] &fEl punto de Spawn aún no ha sido configurado. Avisa a un administrador.'
+  set-success: '&8[&e&l!&8] &f¡El punto de aparición &e(Spawn) &fha sido establecido en tu ubicación!'
+  already-teleporting: '&8[&e&l!&8] &fYa tienes un teletransporte en curso.'
+  teleport-start: '&8[&e&l!&8] &fSerás teletransportado al spawn. &e¡No te muevas!'
+  teleport-cancel: '&8[&c&l!&8] &cTeletransporte cancelado por movimiento.'
+  teleport-cancel-actionbar: '&c¡Teletransporte cancelado!'
+  teleport-success: '&8[&e&l!&8] &fHas sido teletransportado al Spawn.'
+  teleport-success-actionbar: '&e¡Has llegado al Spawn!'
+  teleport-actionbar: '&fTeletransportando en &e&n%time%&f segundos...'
+  cooldown-active: "&8[&e&l!&8] &fDebes esperar &e%time% &fsegundos para volver a ir al Spawn."

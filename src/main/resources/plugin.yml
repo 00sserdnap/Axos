@@ -1,0 +1,31 @@
+name: Axos
+version: '${project.version}' # Esto tomará automáticamente la versión 1.0-SNAPSHOT del pom.xml
+main: cl.pandress.Axos
+api-version: '1.21'
+
+commands:
+
+  spawn:
+    description: Teletransporta al punto de spawn.
+
+  setspawn:
+    description: Establece el punto de spawn.
+    permission: axos.admin.setspawn
+
+  gamemode:
+    description: Comando de gamemode
+    permission: axos.admin.gamemode
+    aliases: [gm]
+
+  rankup:
+    description: Abre el menú de rankup.
+    aliases: [rank]
+
+  rankupadmin:
+    description: Comandos administrativos de rankup.
+    permission: axos.admin.rankup
+    aliases: [radmin]
+
+  misiones:
+    description: Abre el menú de misiones diarias.
+    aliases: [quests, quest]

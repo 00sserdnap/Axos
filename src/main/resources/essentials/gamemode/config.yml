@@ -1,0 +1,5 @@
+webhook:
+  enabled: true
+  url: "TU_URL_DEL_WEBHOOK_AQUI"
+  username: "Axos Logs"
+  avatar-url: "https://cdn-icons-png.flaticon.com/512/3233/3233824.png"

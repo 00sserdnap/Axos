@@ -1,0 +1,8 @@
+messages:
+  not-player: '&8[&c&l!&8] &fSolo los jugadores pueden ejecutar este comando.'
+  no-permission: '&8[&c&l!&8] &fNo tienes permisos para usar este comando.'
+  gm-usage: '&8[&c&l!&8] &fUso: &e/gm <modo> [jugador]'
+  gm-changed: '&8[&a&l!&8] &fTu modo de juego ha sido cambiado a &e%mode%&f.'
+  gm-changed-other: '&8[&a&l!&8] &fHas cambiado el modo de juego de &e%target% &fa &e%mode%&f.'
+  gm-invalid: '&8[&c&l!&8] &fModo de juego inválido: &e%mode%&f.'
+  player-not-found: '&8[&c&l!&8] &fJugador no encontrado.'
